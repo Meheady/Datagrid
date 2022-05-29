@@ -1,5 +1,7 @@
 #gridContainer {
     height: 600px;
+    width: 75%;
+    margin: auto;
   }
   
   .options {
