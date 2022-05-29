@@ -1,0 +1,172 @@
+$(() => {
+    const dataGrid = $('#gridContainer').dxDataGrid({
+      dataSource: orders,
+      keyExpr: 'ID',
+      columnsAutoWidth: true,
+      showBorders: true,
+      export: {
+        enabled: true,
+        allowExportSelectedData: true,
+      },
+      onExporting(e) {
+        const workbook = new ExcelJS.Workbook();
+        const worksheet = workbook.addWorksheet('OrderDetails');
+  
+        DevExpress.excelExporter.exportDataGrid({
+          component: e.component,
+          worksheet,
+          autoFilterEnabled: true,
+        }).then(() => {
+          workbook.xlsx.writeBuffer().then((buffer) => {
+            saveAs(new Blob([buffer], { type: 'application/octet-stream' }), 'OrderDetails.xlsx');
+          });
+        });
+        e.cancel = true;
+      },
+      columns: [
+        'Employee',
+        'CustomerStoreCity',
+        
+      ],
+      selection: {
+        mode: 'multiple',
+      },
+      filterRow: {
+        visible: true,
+        applyFilter: 'auto',
+      },
+       paging: {
+        pageSize: 10,
+      },
+      pager: {
+        visible: true,
+        allowedPageSizes: [10,20, 'all'],
+        showPageSizeSelector: true,
+        showInfo: true,
+        showNavigationButtons: true,
+      },
+    
+      searchPanel: {
+        visible: true,
+        width: 240,
+        placeholder: 'Search...',
+      },
+      headerFilter: {
+        visible: true,
+      },
+      columns: [{
+        dataField: 'OrderNumber',
+        caption: 'Invoice Number',
+        width: 140,
+        headerFilter: {
+          groupInterval: 10000,
+        },
+      }, {
+        dataField: 'OrderDate',
+        alignment: 'right',
+        dataType: 'date',
+        width: 120,
+        calculateFilterExpression(value, selectedFilterOperations, target) {
+          if (target === 'headerFilter' && value === 'weekends') {
+            return [[getOrderDay, '=', 0], 'or', [getOrderDay, '=', 6]];
+          }
+          return this.defaultCalculateFilterExpression(value, selectedFilterOperations, target);
+        },
+        headerFilter: {
+          dataSource(data) {
+            data.dataSource.postProcess = function (results) {
+              results.push({
+                text: 'Weekends',
+                value: 'weekends',
+              });
+              return results;
+            };
+          },
+        },
+      }, {
+        dataField: 'DeliveryDate',
+        alignment: 'right',
+        dataType: 'datetime',
+        width: 180,
+        format: 'M/d/yyyy, HH:mm',
+      }, {
+        dataField: 'SaleAmount',
+        alignment: 'right',
+        format: 'currency',
+        editorOptions: {
+          format: 'currency',
+          showClearButton: true,
+        },
+        headerFilter: {
+          dataSource: [{
+            text: 'Less than $3000',
+            value: ['SaleAmount', '<', 3000],
+          }, {
+  
+            text: '$3000 - $5000',
+            value: [['SaleAmount', '>=', 3000], ['SaleAmount', '<', 5000]],
+          }, {
+  
+            text: '$5000 - $10000',
+            value: [['SaleAmount', '>=', 5000], ['SaleAmount', '<', 10000]],
+          }, {
+  
+            text: '$10000 - $20000',
+            value: [['SaleAmount', '>=', 10000], ['SaleAmount', '<', 20000]],
+          }, {
+            text: 'Greater than $20000',
+            value: ['SaleAmount', '>=', 20000],
+          }],
+        },
+      }, 'Employee', {
+        caption: 'City',
+        dataField: 'CustomerStoreCity',
+        headerFilter: {
+          allowSearch: true,
+        },
+      }],
+    }).dxDataGrid('instance');
+  
+    const applyFilterTypes = [{
+      key: 'auto',
+      name: 'Immediately',
+    }, {
+      key: 'onClick',
+      name: 'On Button Click',
+    }];
+  
+    const applyFilterModeEditor = $('#useFilterApplyButton').dxSelectBox({
+      items: applyFilterTypes,
+      value: applyFilterTypes[0].key,
+      valueExpr: 'key',
+      displayExpr: 'name',
+      onValueChanged(data) {
+        dataGrid.option('filterRow.applyFilter', data.value);
+      },
+    }).dxSelectBox('instance');
+  
+    $('#filterRow').dxCheckBox({
+      text: 'Filter Row',
+      value: true,
+      onValueChanged(data) {
+        dataGrid.clearFilter();
+        dataGrid.option('filterRow.visible', data.value);
+        applyFilterModeEditor.option('disabled', !data.value);
+      },
+    });
+  
+    $('#headerFilter').dxCheckBox({
+      text: 'Header Filter',
+      value: true,
+      onValueChanged(data) {
+        dataGrid.clearFilter();
+        dataGrid.option('headerFilter.visible', data.value);
+      },
+    });
+  
+    function getOrderDay(rowData) {
+      return (new Date(rowData.OrderDate)).getDay();
+    }
+  });
+  
+  

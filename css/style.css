@@ -1,0 +1,41 @@
+#gridContainer {
+    height: 600px;
+  }
+  
+  .options {
+    padding: 20px;
+    margin-top: 20px;
+    background-color: rgba(191, 191, 191, 0.15);
+  }
+  
+  .caption {
+    font-size: 18px;
+    font-weight: 500;
+  }
+  
+  .option {
+    margin-top: 10px;
+  }
+  
+  .option > span {
+    margin-right: 10px;
+  }
+  
+  .option > .dx-selectbox {
+    display: inline-block;
+    vertical-align: middle;
+  }
+  td {
+    border: 1px solid #50bfcb!important;
+}
+tr.dx-row.dx-column-lines.dx-header-row {
+    font-weight: bold;
+    color: #f7f7f7;
+    background: #337ab7;
+}
+.dx-pager .dx-page-sizes .dx-selection, .dx-pager .dx-pages .dx-selection {
+    background-color: #337ab7!important;
+}
+.dx-datagrid .dx-header-filter-empty {
+    color: #f5f5f5!important;
+}
